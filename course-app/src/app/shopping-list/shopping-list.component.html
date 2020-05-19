@@ -1,14 +1,16 @@
+
 <div class="row">
-    <div class="col-xs-10">
-        <app-shopping-edit></app-shopping-edit>
-        <hr>
-        <ul class="list-group">
-            <a class="list-group-item" 
-               style="cursor: pointer;"
-               *ngFor="let ingredient of ingredients; let i = index"
-               (click) = "onEditItem(i)">
-               {{ingredient.name}} ({{ingredient.amount}})
-            </a>
-        </ul>
+    <div class="col-xs-12">
+        <button class="btn btn-success" 
+                (click)="onNewShoppingList()">New ShoppingList</button>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="col-xs-12">
+        <app-shopping-item
+            *ngFor="let sl of shoppingLists"
+            [shoppingList] = "sl"
+            [id] = "sl.id"></app-shopping-item>
     </div>
 </div>

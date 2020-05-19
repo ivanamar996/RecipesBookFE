@@ -25,19 +25,19 @@ export class DataStorageService {
   fetchRecipes() {
 
     return this.http.get<Recipe[]>(
-      'https://my-course-46f6f.firebaseio.com/recipes.json'
+      'https://localhost:44355/api/recepies'
     ).pipe(
       map(recipes => {
         return recipes.map(recipe => {
           return {
             ...recipe,
-            ingredients: recipe.ingredients ? recipe.ingredients : []
+            ingAmounts: recipe.ingAmounts ? recipe.ingAmounts: []
           };
         });
       }),
       tap(recipes => {
         this.recipeService.setRecipes(recipes);
-      })
+       })
     );
 
     /* .subscribe(recipes => {

@@ -1,5 +1,11 @@
 <div class="row">
     <div class="col-xs-12">
+        <button class="btn btn-danger" (click)="onDeleteList()">Delete shopping list</button>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="col-xs-12">
         <form (ngSubmit) = "onSubmit(f)" #f="ngForm">
             <div class="row">
                 <div class="col-sm-5 form-group">
@@ -9,7 +15,8 @@
                            class="form-control"
                            name="name"
                            ngModel
-                           required> <!--#nameInput-->
+                           required
+                           #name> 
                 </div>
                 <div class="col-sm-2 form-group">
                     <label for="amount">Amount</label>
@@ -19,16 +26,32 @@
                            name="amount"
                            ngModel
                            required
-                           pattern="^[1-9]+[0-9]*$"> <!--#nameAmount-->
+                           pattern="^[1-9]+[0-9]*$"
+                           #amount> 
                 </div>
             </div>
             <div class="row">
                 <div class="col-xs-12">
-                    <button class="btn btn-success" type="submit" [disabled]="!f.valid">{{ editMode ? 'Update' : 'Add'}}</button> <!--(click) = "onAddItem()"-->
+                    <button class="btn btn-success" type="submit" [disabled]="!f.valid">{{ editMode ? 'Update' : 'Add'}}</button>
                     <button class="btn btn-danger" type="button" (click)="onDelete()" *ngIf="editMode">Delete</button>
                     <button class="btn btn-primary" type="button" (click) = "onClear()">Clear</button>
                 </div>
             </div>
         </form>
     </div>
-</div>
+    <div class="row">
+        <div class="col-xs-10">
+            <hr>
+            <ul class="list-group">
+                <a class="list-group-item" 
+                   style="cursor: pointer;"
+                   *ngFor="let ingredient of shoppingList.ingAmounts; let i = index"
+                   (click) = "onEditItem(i)">
+                   {{ingredient.ingredient.name}} ({{ingredient.amount}})
+                </a>
+            </ul>
+        </div>
+    </div>  
+</div> 
+
+

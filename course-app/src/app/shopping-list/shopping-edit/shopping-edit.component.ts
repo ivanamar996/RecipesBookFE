@@ -1,9 +1,9 @@
-import { Component, OnInit, ViewChild, ElementRef, OnDestroy} from '@angular/core';
-import { Ingredient } from 'src/app/shared/ingredient.model';
+import { Component, OnInit, ViewChild, OnDestroy} from '@angular/core';
 import { ShoppingListService } from '../shopping-list.service';
 import { NgForm } from '@angular/forms';
-import { Subscription, from } from 'rxjs';
-
+import { IngAmount } from 'src/app/shared/IngAmount.model';
+import { ShoppingList } from '../shopping-list.model';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 
 @Component({
   selector: 'app-shopping-edit',
@@ -11,33 +11,35 @@ import { Subscription, from } from 'rxjs';
   styleUrls: ['./shopping-edit.component.css']
 })
 
-export class ShoppingEditComponent implements OnInit, OnDestroy {
-
-  //@ViewChild('nameInput',{static:false}) nameInputRef : ElementRef;
-  //@ViewChild('amountInput',{static:false}) amountInputRef: ElementRef;
-
+export class ShoppingEditComponent implements OnInit {
+  
   @ViewChild('f') slForm: NgForm;
-
-  subsription: Subscription;
-  editItemIndex:number;
   editMode: boolean = false;
-  editedIngredient: Ingredient;
+  shoppingList : ShoppingList;
+  editingIngAmountIndex: number;
+  id: number;
 
-  constructor(private slService: ShoppingListService) { }
+   constructor(private slService: ShoppingListService, private route: ActivatedRoute,
+    private router: Router) { }
 
   ngOnInit(): void {
-    this.subsription = this.slService.startedEditing.subscribe(
-      (index:number) => {
-        this.editItemIndex = index;
-        this.editMode = true;
-        this.editedIngredient = this.slService.getIngredient(this.editItemIndex);
-
-        this.slForm.setValue({
-          name: this.editedIngredient.name,
-          amount: this.editedIngredient.amount
-        })
+    this.route.params.subscribe(
+      (params: Params) =>{
+        this.id = +params['id'];
+        this.slService.getShoppingList(this.id).subscribe(resData=>{
+          this.shoppingList = resData;
+          this.slForm.setValue({name: null, amount: null});
+          this.editMode = false;
+        });
       }
-    )
+    );
+  }
+
+  onEditItem(index:number){
+    this.editMode = true;
+    var ingAmount = this.shoppingList.ingAmounts[index];
+    this.slForm.setValue({name: ingAmount.ingredient.name, amount: ingAmount.amount});
+    this.editingIngAmountIndex = index;
   }
 
   onClear(){
@@ -45,29 +47,37 @@ export class ShoppingEditComponent implements OnInit, OnDestroy {
     this.editMode = false;
   }
 
-  onDelete(){
-    this.slService.deleteIngredient(this.editItemIndex);
-    this.onClear();
-  }
+   onDelete(){
+     this.shoppingList.ingAmounts.splice(this.editingIngAmountIndex,1);
+     this.slService.updateShoppingList(this.id, this.shoppingList);
+     this.onClear();
+   }
 
-  onSubmit(form:NgForm){
-
-    //const name = this.nameInputRef.nativeElement.value;
-    //const amount = this.amountInputRef.nativeElement.value;
+   onSubmit(form:NgForm){
     const value = form.value;
 
-    const newIngredient = new Ingredient(value.name,value.amount);
     if(this.editMode){
-      this.slService.updateIngredient(this.editItemIndex, newIngredient);
+      this.shoppingList.ingAmounts[this.editingIngAmountIndex].ingredient.name = value.name;
+      this.shoppingList.ingAmounts[this.editingIngAmountIndex].amount = value.amount;
+      this.slService.updateShoppingList(this.id, this.shoppingList);
+
     }else{
-      this.slService.addIngredient(newIngredient);
+
+      var newIngAmount = new IngAmount(0,value.amount,null,{name: value.name, id: 0}, null, this.id);
+      this.shoppingList.ingAmounts.push(newIngAmount);
+      this.slService.updateShoppingList(this.id, this.shoppingList);
     }
+
     form.reset();
     this.editMode = false;
+    
   }
 
-  ngOnDestroy(): void {
-    this.subsription.unsubscribe();
+  onDeleteList(){
+    this.slService.deleteShoppingList(this.id).subscribe(response => {
+      this.router.navigateByUrl('shopping-list').then(() => {
+        window.location.reload();
+      }); 
+    });
   }
-
 }

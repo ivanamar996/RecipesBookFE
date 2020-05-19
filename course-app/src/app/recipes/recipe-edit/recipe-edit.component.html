@@ -43,7 +43,7 @@
                         <label for="description">Description</label>
                         <textarea 
                             type="text"
-                            id="name"
+                            id="description"
                             class="form-control"
                             rows="6"
                             formControlName="description">
@@ -52,17 +52,17 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-xs-12" formArrayName="ingredients">
+                <div class="col-xs-12" formArrayName="ingAmounts">
                     <div class="row"
                         *ngFor="let ingredientCtrl of controls; let i = index"
                         [formGroupName]="i"
                         style="margin-top: 10px;">
-                        <div class="col-xs-8">
-                            <input 
-                            type="text"
-                            class="form-control"
-                            formControlName="name">
-                        </div>
+                        <div class="col-xs-8" formGroupName="ingredient">
+                              <input 
+                              type="text" 
+                              class="form-control"
+                              formControlName="name">
+                          </div>
                         <div class="col-xs-2">
                             <input 
                             type="number"

@@ -1,17 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, tap } from 'rxjs/operators';
-import { throwError, Subject, BehaviorSubject } from 'rxjs';
+import { throwError, BehaviorSubject } from 'rxjs';
 import { User } from './user.model';
 import { Router } from '@angular/router';
-import { environment } from '../../environments/environment';
 
 export interface AuthResponseData{
-  idToken : string,
-  email : string,
-  refreshToken : string,
-  expiresIn : string,
-  localId : string
+  token : string,
+  expiration : string,
+  //refreshToken : string,
+  //expiresIn : string,
+  //localId : string
 }
 
 @Injectable({
@@ -25,24 +24,22 @@ export class AuthService {
   constructor(private http:HttpClient, private router: Router) { }
 
   signIn(email:string, password:string){
-    return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + environment.firebaseAPIKey,
+    return this.http.post<AuthResponseData>('https://localhost:44355/api/Auth/register' ,
     {
       email: email,
-      password:password, 
-      returnSecureToken : true
+      password:password
     }).pipe(catchError(this.handleError), tap( resdata => {
-     this.handleAuthentication(resdata.email,resdata.localId,resdata.idToken,+resdata.expiresIn);
+      this.handleAuthentication(email,resdata.token, resdata.expiration);
     }));
   }
 
   login(email:string, password:string){
-    return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + +environment.firebaseAPIKey,
+    return this.http.post<AuthResponseData>('https://localhost:44355/api/Auth/login',
     {
       email: email,
-      password:password, 
-      returnSecureToken : true
+      password:password
     }).pipe(catchError(this.handleError), tap( resdata => {
-      this.handleAuthentication(resdata.email,resdata.localId,resdata.idToken,+resdata.expiresIn);
+      this.handleAuthentication(email,resdata.token, resdata.expiration);
      }));;
   }
 
@@ -62,7 +59,7 @@ export class AuthService {
       return;
     }
 
-    const loadedUser = new User(userData.email, userData.id, userData._token, new Date(userData._tokenExpirationDate));
+    const loadedUser = new User(userData.email, userData._token, new Date(userData._tokenExpirationDate));
     if(loadedUser.token){
       this.user.next(loadedUser);
       const expirationDuration = new Date(userData._tokenExpirationDate).getTime() - new Date().getTime();
@@ -73,15 +70,16 @@ export class AuthService {
   autoLogout(expirationDuration: number){
     this.tokenExpirationTimer = setTimeout(()=>{
       this.logout();
-    }, expirationDuration);
+    }, expirationDuration / 1000);
   }
 
-  private handleAuthentication(email: string, localId:string,token: string, expiresIn: number){
-    const exparationDate = new Date(new Date().getTime() + expiresIn * 1000);
-    const user = new User(email,localId,token, exparationDate);
-    this.user.next(user);
-    this.autoLogout(expiresIn * 1000);
+  private handleAuthentication(email: string,token: string, expiration: string){
+    console.log("Handle auth");
+    const exparationDate = new Date(expiration);
+    const user = new User(email,token, exparationDate);
+    //this.autoLogout(exparationDate.getMilliseconds());
     localStorage.setItem('userData', JSON.stringify(user));
+    this.user.next(user);
   }
 
   private handleError(errorRes: HttpErrorResponse){
@@ -90,17 +88,17 @@ export class AuthService {
       return throwError(errorMessage);
     }
     
-    switch(errorRes.error.error.message){
-      case "EMAIL_EXISTS":
-        errorMessage = "This email exists already!";
-        break;
-      case "EMAIL_NOT_FOUND":
-        errorMessage = "This email is not correct!";
-        break;
-      case "INVALID_PASSWORD":
-        errorMessage = "This password is not correct!";
-        break;
-    }
+    // switch(errorRes.error.error.message){
+    //   case "EMAIL_EXISTS":
+    //     errorMessage = "This email exists already!";
+    //     break;
+    //   case "EMAIL_NOT_FOUND":
+    //     errorMessage = "This email is not correct!";
+    //     break;
+    //   case "INVALID_PASSWORD":
+    //     errorMessage = "This password is not correct!";
+    //     break;
+    // }
     return throwError(errorMessage);
   }
 }

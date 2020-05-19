@@ -4,60 +4,55 @@ import { Recipe } from './recipe.model';
 import { Ingredient } from '../shared/ingredient.model';
 import { ShoppingListService } from '../shopping-list/shopping-list.service';
 import { Subject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { IngAmount } from '../shared/IngAmount.model';
 
 @Injectable()
 export class RecipeService {
 
     recipesChanged = new Subject<Recipe[]>();
 
-    /*private recipes: Recipe[] = [
-        new Recipe('A test recipe',
-            'This is a test',
-            'https://img.hellofresh.com/f_auto,fl_lossy,q_auto,w_1024/hellofresh_s3/image/5dcc139c96d0db43857c2eb3-a12c2ae7.jpg',
-            [
-                new Ingredient('Bread', 1),
-                new Ingredient('Meat', 1)
-            ]),
-        new Recipe('Another test recipe',
-            'This is a test',
-            'https://img.hellofresh.com/f_auto,fl_lossy,q_auto,w_1024/hellofresh_s3/image/5dcc139c96d0db43857c2eb3-a12c2ae7.jpg',
-            [
-                new Ingredient('Eggs', 5),
-                new Ingredient('Milk', 1)
-            ])
-    ];*/
-
-    //@Output() recipeSelected = new EventEmitter<Recipe>();
-
     private recipes: Recipe[] = [];
 
-    constructor(private slService: ShoppingListService) { }
+    constructor(private slService: ShoppingListService, private http: HttpClient) { }
 
     getRecipes() {
         return this.recipes.slice(); //copy of recipes list
     }
 
-    getRecipe(index: number) {
-        return this.recipes[index];
+    getRecipe(id: number) {
+        return this.http.get<Recipe>('https://localhost:44355/api/recepies/'+ id);
     }
 
-    addIngToShoppingList(ingredients: Ingredient[]) {
-        this.slService.addIngredients(ingredients);
+    addIngToShoppingList(slId:number,recepiId:number) {
+        this.slService.addIngredients(slId,recepiId);
     }
 
     addNewRecipe(recipe:Recipe){
-        this.recipes.push(recipe);
-        this.recipesChanged.next(this.recipes.slice());
+        this.http.post('https://localhost:44355/api/recepies', recipe)
+        .subscribe(responseRecepie => {
+            this.recipes.push(responseRecepie as Recipe);
+            this.recipesChanged.next(this.recipes.slice());
+        });
     }
 
-    updateRecipe(index:number, newRecipe:Recipe){
-        this.recipes[index] = newRecipe;
-        this.recipesChanged.next(this.recipes.slice());
+    updateRecipe(id:number, newRecipe:Recipe){
+        this.http.put('https://localhost:44355/api/recepies/'+ id, newRecipe)
+        .subscribe(responseRecepie => {
+            var index = this.recipes.findIndex(x=>x.id==id);
+            this.recipes[index] = newRecipe;
+            this.recipesChanged.next(this.recipes.slice());
+        });
+
     }
 
-    deleteRecipe(index:number){
-        this.recipes.splice(index,1);
-        this.recipesChanged.next(this.recipes.slice());
+    deleteRecipe(id:number){
+        this.http.delete('https://localhost:44355/api/recepies/'+ id)
+        .subscribe(responseRecepie => {
+            var index = this.recipes.findIndex(x=>x.id == id);
+            this.recipes.splice(index,1);
+            this.recipesChanged.next(this.recipes.slice());
+        });
     }
 
     setRecipes(recipes:Recipe[]){

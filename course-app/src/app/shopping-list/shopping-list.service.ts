@@ -1,46 +1,63 @@
 import { Ingredient } from '../shared/ingredient.model';
-//import { Output, EventEmitter } from '@angular/core';
 import { Subject } from 'rxjs';
+import { IngAmount } from '../shared/IngAmount.model';
+import { HttpClient } from '@angular/common/http';
+import { RecipeService } from '../recipes/recipes.service';
+import { ShoppingList } from './shopping-list.model';
+import { map, tap } from 'rxjs/operators';
+import { Injectable } from '@angular/core';
 
+@Injectable()
 export class ShoppingListService{
 
-   // @Output() ingredientsChanged = new EventEmitter<Ingredient[]>();
-   ingredientsChanged = new Subject<Ingredient[]>();
-   startedEditing = new Subject<number>();
+    sList:ShoppingList;
+    private shoppingLists : ShoppingList[] = [];
 
-    private ingredients: Ingredient[] = [
-        new Ingredient('Apples',5),
-        new Ingredient('Tomates',10)
-    ];
+    constructor(private http: HttpClient) { }
     
-    getIngredients(){
-        return this.ingredients.slice();
+    getShoppingLists(){
+        return this.http.get<ShoppingList[]>(
+            'https://localhost:44355/api/shoppingLists'
+          ).pipe(
+            map(shoppingLists => {
+                console.log(shoppingLists);
+              return shoppingLists.map(list => {
+                return {
+                  ...list,
+                  ingAmounts: list.ingAmounts ? list.ingAmounts: []
+                };
+              });
+            })
+          );
     }
 
-    addIngredient(ingredient: Ingredient){
-        this.ingredients.push(ingredient);
-        //this.ingredientsChanged.emit(this.ingredients.slice());
-        this.ingredientsChanged.next(this.ingredients.slice());
+    getShoppingList(id: number) {
+      return this.http.get<ShoppingList>('https://localhost:44355/api/shoppingLists/'+ id);
     }
 
-    getIngredient(index: number){
-        return this.ingredients[index];
-    }
+    addNewShoppingList(shoppingList:ShoppingList){
+      return this.http.post('https://localhost:44355/api/shoppingLists', shoppingList);
+   }
 
-    addIngredients(ingredients : Ingredient[]){
-        this.ingredients.push(...ingredients);
-        //this.ingredientsChanged.emit(this.ingredients.slice());
-        this.ingredientsChanged.next(this.ingredients.slice());
-    }
 
-    updateIngredient(index:number,newIngredient: Ingredient){
-        this.ingredients[index] = newIngredient;
-        this.ingredientsChanged.next(this.ingredients.slice());
+    updateShoppingList(id:number,changedShoppingList: ShoppingList){
+      this.http.put('https://localhost:44355/api/shoppingLists/'+ id, changedShoppingList)
+      .subscribe(responseRecepie => {
+          // var index = this.recipes.findIndex(x=>x.id==id);
+          // this.recipes[index] = newRecipe;
+          // this.recipesChanged.next(this.recipes.slice());
+      });
     }
+    deleteShoppingList(id:number){
+      return this.http.delete('https://localhost:44355/api/shoppingLists/'+ id);
+  }
 
-    deleteIngredient(index: number){
-        this.ingredients.splice(index,1);
-        this.ingredientsChanged.next(this.ingredients.slice());
-    }
-
+  addIngredients(slId:number,recepieId:number){
+    this.http.put(`https://localhost:44355/api/shoppingLists/addIngredientsToShoppingList/${slId}/recepie/${recepieId}`, null)
+    .subscribe(responseRecepie => {
+        // var index = this.recipes.findIndex(x=>x.id==id);
+        // this.recipes[index] = newRecipe;
+        // this.recipesChanged.next(this.recipes.slice());
+    });
+  }
 }
