@@ -21,7 +21,7 @@ export class RecipeService {
     }
 
     getRecipe(id: number) {
-        return this.http.get<Recipe>('https://localhost:44355/api/recepies/'+ id);
+        return this.http.get<Recipe>('https://localhost:44355/api/recipes/'+ id);
     }
 
     addIngToShoppingList(slId:number,recepiId:number) {
@@ -29,7 +29,7 @@ export class RecipeService {
     }
 
     addNewRecipe(recipe:Recipe){
-        this.http.post('https://localhost:44355/api/recepies', recipe)
+        this.http.post('https://localhost:44355/api/recipes', recipe)
         .subscribe(responseRecepie => {
             this.recipes.push(responseRecepie as Recipe);
             this.recipesChanged.next(this.recipes.slice());
@@ -37,7 +37,7 @@ export class RecipeService {
     }
 
     updateRecipe(id:number, newRecipe:Recipe){
-        this.http.put('https://localhost:44355/api/recepies/'+ id, newRecipe)
+        this.http.put('https://localhost:44355/api/recipes/'+ id, newRecipe)
         .subscribe(responseRecepie => {
             var index = this.recipes.findIndex(x=>x.id==id);
             this.recipes[index] = newRecipe;
@@ -47,7 +47,7 @@ export class RecipeService {
     }
 
     deleteRecipe(id:number){
-        this.http.delete('https://localhost:44355/api/recepies/'+ id)
+        this.http.delete('https://localhost:44355/api/recipes/'+ id)
         .subscribe(responseRecepie => {
             var index = this.recipes.findIndex(x=>x.id == id);
             this.recipes.splice(index,1);

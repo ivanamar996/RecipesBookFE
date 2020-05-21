@@ -65,7 +65,7 @@ export class RecipeEditComponent implements OnInit {
                   Validators.pattern(/^[1-9]+[0-9]*$/)
                 ]),
                'ingredientId': new FormControl(ingAmount.ingredientId),
-               'recepieId': new FormControl(ingAmount.recepieId),
+               'recipeId': new FormControl(ingAmount.recipeId),
                'shoppingListId': new FormControl(ingAmount.shoppingListId)
               }))
             }
@@ -101,7 +101,7 @@ export class RecipeEditComponent implements OnInit {
         Validators.required,
         Validators.pattern(/^[1-9]+[0-9]*$/)
       ]),
-      'recepieId': new FormControl(this.id),
+      'recipeId': new FormControl(this.id),
     }));
    }
 
