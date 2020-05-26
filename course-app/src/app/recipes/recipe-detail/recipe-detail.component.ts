@@ -3,6 +3,8 @@ import { Component, OnInit, Input } from '@angular/core';
 
 import { Recipe } from '../recipe.model';
 import { RecipeService } from '../recipes.service';
+import { ShoppingListService } from 'src/app/shopping-list/shopping-list.service';
+import { ShoppingList } from 'src/app/shopping-list/shopping-list.model';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -12,11 +14,13 @@ import { RecipeService } from '../recipes.service';
 export class RecipeDetailComponent implements OnInit {
 
  // @Input() recipe : Recipe;
+  showLists = false;
+  sLists: ShoppingList[];
   recipe : Recipe;
   id: number;
 
   constructor(private recipeService: RecipeService, private route: ActivatedRoute,
-              private router: Router) { }
+              private router: Router, private slService: ShoppingListService) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(
@@ -30,7 +34,18 @@ export class RecipeDetailComponent implements OnInit {
   }
 
   onAddToShoppingList(){
-    this.recipeService.addIngToShoppingList(35,this.recipe.id);
+    this.slService.getShoppingLists().subscribe(
+      data => {
+        this.showLists = true;
+        this.sLists = data;
+      }
+    )
+  }
+
+  onPlusButtonClick(slId:number){
+    this.recipeService.addIngToShoppingList(slId,this.recipe.id).subscribe(response=>{
+      this.router.navigate(['/shopping-list/' + slId]);
+    });
   }
 
   onEditRecipe(){

@@ -25,7 +25,7 @@ export class RecipeService {
     }
 
     addIngToShoppingList(slId:number,recepiId:number) {
-        this.slService.addIngredients(slId,recepiId);
+        return this.slService.addIngredients(slId,recepiId);
     }
 
     addNewRecipe(recipe:Recipe){

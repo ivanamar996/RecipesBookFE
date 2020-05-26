@@ -53,11 +53,6 @@ export class ShoppingListService{
   }
 
   addIngredients(slId:number,recepieId:number){
-    this.http.put(`https://localhost:44355/api/shoppingLists/addIngredientsToShoppingList/${slId}/recepie/${recepieId}`, null)
-    .subscribe(responseRecepie => {
-        // var index = this.recipes.findIndex(x=>x.id==id);
-        // this.recipes[index] = newRecipe;
-        // this.recipesChanged.next(this.recipes.slice());
-    });
-  }
+    return this.http.put(`https://localhost:44355/api/shoppingLists/addIngredientsToShoppingList/${slId}/recepie/${recepieId}`, null);
+  }  
 }
